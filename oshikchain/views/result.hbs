@@ -40,7 +40,7 @@
                         var current = candidates[x];
                         for (var j = 0; j < response.wallets.length; j++) {
                             if (current == response.wallets[j].publicKey) {
-                                textDisplay += "Name: " + response.wallets[j].user.firstName + " " + response.wallets[j].user.lastName + " Votes: " + response.wallets[j].user.transactions.length + "\n";
+                                textDisplay += "Name: " + response.wallets[j].user.firstName + " " + response.wallets[j].user.lastName + " Votes: " + response.wallets[j].user.transactions.length + "<br />";
                             }
                         }
                     }
