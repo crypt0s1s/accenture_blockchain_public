@@ -57,6 +57,7 @@ def proveWork(lastProof):
 # Store all the transactins for this node
 transactions = []
 blockchain = []
+wallets = []
 
 @node.route('/mine', methods = ['POST'])
 def mine():
@@ -146,17 +147,31 @@ def get_blocks():
   return chain
 
 # Wallet Upkeep
-@node.route('/new/wallet', methods=['GET'])
+@node.route('/new/wallet', methods=['POST'])
 def newWallet():
-  randGen = Random.new().read
-  privateKey = RSA.generate(1024, randGen)
-  publicKey = privateKey.publickey()
-  response = {
-    'privateKey': binascii.hexlify(privateKey.exportKey(format='DER')).decode('ascii'),
-    'publicKey': binascii.hexlify(publicKey.exportKey(format='DER')).decode('ascii')
-  }
+    firstName = request.form['firstName']
+    lastName = request.form['lastName']
+    tfn = request.form['tfn']
+    address = request.form['address']
 
-  return jsonify(response), 200
+    randGen = Random.new().read
+    privateKey = RSA.generate(1024, randGen)
+    publicKey = privateKey.publickey()
+    wallet = {
+        'privateKey': binascii.hexlify(privateKey.exportKey(format='DER')).decode('ascii'),
+        'publicKey': binascii.hexlify(publicKey.exportKey(format='DER')).decode('ascii'),
+        'user': {
+            "firstName": firstName,
+            "lastName": lastName,
+            "tfn": tfn,
+            "address": address,
+            "transactions": []
+        }
+    }
+
+    # Add our wallet to our list of wallets
+    wallets.append(wallet)
+    return jsonify(wallet), 200
 
 def signTransaction(privateKey, senderAddress, candidateAddress, transactionAmount):
     signer = PKCS1_v1_5.new(privateKey)
@@ -164,7 +179,7 @@ def signTransaction(privateKey, senderAddress, candidateAddress, transactionAmou
     sha.update(str(senderAddress) + str(candidateAddress) + str(transactionAmount))
     return sha.hexdigest()
 
-@node.route('/new-transaction', methods=['POST'])
+@node.route('/new/transaction', methods=['POST'])
 def transaction():
     # Extract body from post
     senderAddress = request.form['senderAddress']
@@ -176,10 +191,14 @@ def transaction():
     lastBlock = blockchain[len(blockchain) - 1]
     lastProof = lastBlock.data['proof']
     
+    transactionModel = { "from": senderAddress, "to": candidateAddress, "amount": transactionAmount, 'signature': signTransaction(senderPrivateKey, senderAddress, candidateAddress, transactionAmount) }
+
     # Once we have proved the work we can continue with the transaction and reward the client
-    transactions.append(
-        { "from": senderAddress, "to": candidateAddress, "amount": transactionAmount, 'signature': signTransaction(senderPrivateKey, senderAddress, candidateAddress, transactionAmount) }
-    )
+    transactions.append(transactionModel)
+
+    for x in range(0, len(wallets)):
+        if wallets[0]['publicKey']:
+            wallets[0]['user']['transactions'].append(transactionModel)
   
     # Create our new block
     blockData = {
@@ -212,8 +231,13 @@ def transaction():
 @node.route('/transactions', methods=['GET'])
 def getTransactions():
     # Return our transactions from our blockchain
-
     response = {'transactions': transactions}
+    return jsonify(response), 200
+
+@node.route('/wallets', methods=['GET'])
+def getWallets():
+    # Return our wallets
+    response = {'wallets': wallets}
     return jsonify(response), 200
 
 node.run()
