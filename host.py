@@ -192,15 +192,16 @@ def transaction():
     lastProof = lastBlock.data['proof']
     
     transactionModel = { "from": senderAddress, "to": candidateAddress, "amount": transactionAmount, 'signature': signTransaction(senderPrivateKey, senderAddress, candidateAddress, transactionAmount) }
-    print(transactionModel)
+    #print(transactionModel)
 
     # Once we have proved the work we can continue with the transaction and reward the client
     transactions.append(transactionModel)
 
     for x in range(0, len(wallets)):
-        print(wallets[x]['publicKey'])
+        print("Wallet ID: " + wallets[x]['publicKey'])
+        print("Candidate ID: " + candidateAddress)
         if wallets[x]['publicKey'] == candidateAddress:
-            wallets[0]['user']['transactions'].append(transactionModel)
+            wallets[x]['user']['transactions'].append(transactionModel)
   
     # Create our new block
     blockData = {
