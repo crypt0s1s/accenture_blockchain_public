@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+
+
+<head>
+	<link rel="stylesheet" type="text/css" href="Registrationcss.css">
+</head>
+
+<body style="background-color: #ffffff">
+	<div class="Menu">
+		<div class="HomePage">
+			<li> <a href="#">Home</a> </li>
+		</div>
+	</div>
+
+	<!--THE HEADING-->
+	<center>
+		<div class="heading">
+			<h1><b style="font-family: Verdana; font-size: 40px; width: 500px; color: #0098b0">Digital Voting System</b></h1>
+		</div>
+	</center>
+
+	<div class="Info">
+			<table align="center">
+				<thead>
+					<tr>
+						<td colspan="4" align="center"> <b style="color: #0098b0">Enter your details below: </b></td>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td colspan="2" style="color: #0098b0">First Name:
+							<input id="firstNameInput" class="form-control" type="text" style="width:95%" required>
+						</td>
+						<td colspan="2" style="color: #0098b0">Last Name:
+							<input id="lastNameInput" class="form-control" type="text" style="width:95%" required>
+						</td>
+					</tr>
+					<tr>
+						<td colspan="4" style="color: #0098b0">
+							TFN:
+							<input id="tfnInput" class="in" type="text" style="width:97.5%" required>
+						</td>
+					</tr>
+					<tr>
+						<td colspan="4" style="color: #0098b0">
+							Address:
+							<input id="addressInput" class="in" type="text" style="width:97.5%" required>
+						</td>
+					</tr>
+				</tbody>
+				<tfoot>
+					<tr>
+						<td align="center" colspan="4">
+							<input onclick="startOnboarding()" style="color: #0098b0" type="submit" value="Proceed To Vote">
+						</td>
+					</tr>
+				</tfoot>
+			</table>
+	</div>
+	<script type="text/javascript">
+		function startOnboarding() {
+			createWallet()
+		}
+
+		function createWallet() {
+			var firstName = document.getElementById("firstNameInput").value;
+			var lastName = document.getElementById("lastNameInput").value;
+			var tfn = document.getElementById("tfnInput").value;
+			var address = document.getElementById("addressInput").value;
+
+			console.log(firstName, lastName, tfn, address);
+
+			var xhr = new XMLHttpRequest();
+			xhr.onreadystatechange = function() {
+				if (xhr.readyState === 4) {
+					var response = JSON.parse(xhr.response);
+					console.log(response.privateKey)
+					localStorage.setItem("privateKey", response.privateKey)
+					localStorage.setItem("publicKey", response.publicKey)
+					window.location = '/vote'
+				}
+			}
+			xhr.open("POST", "http://localhost:5000/new/wallet", true);
+			xhr.setRequestHeader('Content-Type', 'application/json');
+			xhr.send(JSON.stringify({
+				"firstName": firstName,
+				"lastName": lastName,
+				"tfn": tfn,
+				"address": address
+			}))
+		}
+	</script>
+</body>
+
+
+</html>

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+
+
+<head>
+	<link rel="stylesheet" type="text/css" href="Registrationcss.css">
+</head>
+
+<body style="background-color: #ffffff">
+	<div class="Menu">
+		<div class="HomePage">
+			<li> <a href="#">Home</a> </li>
+		</div>
+	</div>
+
+	<!--THE HEADING-->
+	<center>
+		<div class="heading">
+			<h1><b style="font-family: Verdana; font-size: 40px; width: 500px; color: #0098b0">Digital Voting System</b></h1>
+		</div>
+	</center>
+
+	<div class="Info">
+			<table align="center">
+				<thead>
+					<tr>
+						<td colspan="4" align="center"> <b style="color: #0098b0">Enter your details below: </b></td>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td colspan="2" style="color: #0098b0">Candidate Wallet:
+							<!--<input id="candidateWallet" class="form-control" type="select" style="width:95%" required>-->
+                            <select id="candidateWallet" style="width:95%" class="form-control" required name="candidateWallet">       
+                            </select>
+						</td>
+					</tr>
+				</tbody>
+				<tfoot>
+					<tr>
+						<td align="center" colspan="4">
+							<input onclick="voteForCandidate()" style="color: #0098b0" type="submit" value="Proceed To Vote">
+						</td>
+					</tr>
+				</tfoot>
+			</table>
+	</div>
+	<script type="text/javascript">
+        var thisCand = localStorage.getItem("candidates")
+        var candidates = JSON.parse(thisCand);
+
+        for (var j = 0; j < candidates.length; j++) {
+            document.getElementById("candidateWallet").innerHTML += '<option value="' + candidates[j] +'">' + candidates[j] + '</option>'
+        }
+
+		function voteForCandidate() {
+			var minerAddress = localStorage.getItem("publicKey")
+			var candidateAddress = document.getElementById("candidateWallet").value;
+
+			console.log(minerAddress, candidateAddress);
+
+			mineCoin(minerAddress, candidateAddress);
+		}
+
+        function mineCoin(minerAddress, candidateAddress) {
+            var xhr = new XMLHttpRequest();
+			xhr.onreadystatechange = function() {
+				if (xhr.readyState === 4) {
+                    console.log(xhr.response)
+                    transactVote(minerAddress, candidateAddress);
+				}
+			}
+			xhr.open("POST", "http://localhost:5000/mine", true);
+			xhr.setRequestHeader('Content-Type', 'application/json');
+			xhr.send(JSON.stringify({
+				"minerAddress": minerAddress,
+			}))
+        }
+
+        function transactVote(minerAddress, candidateAddress) {
+            var xhr = new XMLHttpRequest();
+			xhr.onreadystatechange = function() {
+				if (xhr.readyState === 4) {
+                    console.log(xhr.response)
+				}
+			}
+			xhr.open("POST", "http://localhost:5000/new/transaction", true);
+			xhr.setRequestHeader('Content-Type', 'application/json');
+			xhr.send(JSON.stringify({
+				"senderAddress": minerAddress,
+                "senderPrivateKey": localStorage.getItem("privateKey"),
+                "candidateAddress": candidateAddress,
+                "transactionAmount": 1
+			}))
+        }
+	</script>
+</body>
+
+
+</html>

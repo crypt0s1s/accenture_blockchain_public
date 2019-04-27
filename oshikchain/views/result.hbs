@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+
+
+<head>
+	<link rel="stylesheet" type="text/css" href="Registrationcss.css">
+</head>
+
+<body style="background-color: #ffffff">
+	<div class="Menu">
+		<div class="HomePage">
+			<li> <a href="#">Home</a> </li>
+		</div>
+	</div>
+
+	<!--THE HEADING-->
+	<center>
+		<div class="heading">
+			<h1><b style="font-family: Verdana; font-size: 40px; width: 500px; color: #0098b0">Add Candidate</b></h1>
+		</div>
+	</center>
+
+	<div class="Info">
+
+        <input onclick="showResults()" style="color: #0098b0" type="submit" value="Show Results">
+        <div id="results"></div>
+
+	</div>
+	<script type="text/javascript">
+		function showResults() {
+			var thisCand = localStorage.getItem("candidates")
+            var candidates = JSON.parse(thisCand);
+            var textDisplay = "";
+
+            var xhr = new XMLHttpRequest();
+			xhr.onreadystatechange = function() {
+				if (xhr.readyState === 4) {
+                    var response = JSON.parse(xhr.response);
+					for (var x = 0; x < candidates.length; x++) {
+                        var current = candidates[x];
+                        for (var j = 0; j < response.wallets.length; j++) {
+                            if (current == response.wallets[j].publicKey) {
+                                textDisplay += "Name: " + response.wallets[j].user.firstName + " " + response.wallets[j].user.lastName + " Votes: " + response.wallets[j].user.transactions.length + "\n";
+                            }
+                        }
+                    }
+                    document.getElementById("results").innerHTML = textDisplay;
+				}
+			}
+			xhr.open("GET", "http://localhost:5000/wallets", true);
+			xhr.setRequestHeader('Content-Type', 'application/json');
+			xhr.send();
+
+            
+		}
+
+		function createWallet() {
+			var firstName = document.getElementById("firstNameInput").value;
+			var lastName = document.getElementById("lastNameInput").value;
+			var tfn = '';
+			var address = '';
+
+
+			var xhr = new XMLHttpRequest();
+			xhr.onreadystatechange = function() {
+				if (xhr.readyState === 4) {
+					var response = JSON.parse(xhr.response);
+                    console.log(localStorage.getItem("candidates"))
+                    var thisCand = localStorage.getItem("candidates")
+                    var candidates = JSON.parse(thisCand);
+
+                    if (candidates != null && candidates != "" && candidates != undefined) {
+                        candidates.push(JSON.parse(xhr.response).publicKey)
+                        console.log(candidates)
+                        localStorage.setItem("candidates", JSON.stringify(candidates));
+                    } else {
+                        candidates = []
+                        candidates.push(JSON.parse(xhr.response).publicKey)
+                        console.log(candidates)
+                        localStorage.setItem("candidates", JSON.stringify(candidates))
+                    }
+				}
+			}
+			xhr.open("POST", "http://localhost:5000/new/wallet", true);
+			xhr.setRequestHeader('Content-Type', 'application/json');
+			xhr.send(JSON.stringify({
+				"firstName": firstName,
+				"lastName": lastName,
+				"tfn": tfn,
+				"address": address
+			}))
+		}
+	</script>
+</body>
+
+
+</html>

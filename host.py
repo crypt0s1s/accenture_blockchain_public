@@ -24,7 +24,7 @@ class Block:
     def hashNewBlock(self):
         # Hash our block using Sha256
         sha = hasher.sha256()
-        sha.update(str(self.i) + str(self.timestamp) + str(self.data) + str(self.previousHash))
+        sha.update((str(self.i) + str(self.timestamp) + str(self.data) + str(self.previousHash)).encode('utf-8'))
         return sha.hexdigest()
 
 # Methods for block handling
@@ -61,7 +61,7 @@ wallets = []
 
 @node.route('/mine', methods = ['POST'])
 def mine():
-    minerAddress = request.form['minerAddress']
+    minerAddress = request.json['minerAddress']
 
     if (len(blockchain) < 1):
         firstBlock = genFirstBlock()
@@ -149,10 +149,10 @@ def get_blocks():
 # Wallet Upkeep
 @node.route('/new/wallet', methods=['POST'])
 def newWallet():
-    firstName = request.form['firstName']
-    lastName = request.form['lastName']
-    tfn = request.form['tfn']
-    address = request.form['address']
+    firstName = request.json['firstName']
+    lastName = request.json['lastName']
+    tfn = request.json['tfn']
+    address = request.json['address']
 
     randGen = Random.new().read
     privateKey = RSA.generate(1024, randGen)
@@ -176,16 +176,16 @@ def newWallet():
 def signTransaction(privateKey, senderAddress, candidateAddress, transactionAmount):
     signer = PKCS1_v1_5.new(privateKey)
     sha = hasher.sha256()
-    sha.update(str(senderAddress) + str(candidateAddress) + str(transactionAmount))
+    sha.update((str(senderAddress) + str(candidateAddress) + str(transactionAmount)).encode('utf-8'))
     return sha.hexdigest()
 
 @node.route('/new/transaction', methods=['POST'])
 def transaction():
     # Extract body from post
-    senderAddress = request.form['senderAddress']
-    senderPrivateKey = request.form['senderPrivateKey']
-    candidateAddress = request.form['candidateAddress']
-    transactionAmount = request.form['transactionAmount']
+    senderAddress = request.json['senderAddress']
+    senderPrivateKey = request.json['senderPrivateKey']
+    candidateAddress = request.json['candidateAddress']
+    transactionAmount = request.json['transactionAmount']
 
     # Get what the last proof was
     lastBlock = blockchain[len(blockchain) - 1]
@@ -197,7 +197,7 @@ def transaction():
     transactions.append(transactionModel)
 
     for x in range(0, len(wallets)):
-        if wallets[0]['publicKey']:
+        if wallets[x]['publicKey'] == candidateAddress:
             wallets[0]['user']['transactions'].append(transactionModel)
   
     # Create our new block
@@ -238,6 +238,16 @@ def getTransactions():
 def getWallets():
     # Return our wallets
     response = {'wallets': wallets}
+    return jsonify(response), 200
+
+@node.route('/wallet', methods=['GET'])
+def getWallet():
+    # Return our wallets
+    response = ''
+    for x in range(0, len(wallets)):
+        if wallets[0]['publicKey'] == response.json["walletAddress"]:
+            response = {'wallet': wallets[X]}
+    
     return jsonify(response), 200
 
 node.run()
