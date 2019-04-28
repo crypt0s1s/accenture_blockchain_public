@@ -9,7 +9,7 @@
 <body style="background-color: #ffffff">
 	<div class="Menu">
 		<div class="HomePage">
-			<li> <a href="#">Home</a> </li>
+			<li> <a href="/">Home</a> </li>
 		</div>
 	</div>
 
@@ -60,6 +60,7 @@
 			console.log("Candidate: ", candidateAddress);
 
 			mineCoin(minerAddress, candidateAddress);
+            window.location = "http://localhost:3000/success";
 		}
 
         function mineCoin(minerAddress, candidateAddress) {

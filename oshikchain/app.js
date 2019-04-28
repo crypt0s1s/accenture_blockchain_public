@@ -9,6 +9,7 @@ var usersRouter = require('./routes/users');
 var voteRouter = require('./routes/vote');
 var candidateRouter = require('./routes/createCandidate');
 var resultRouter = require('./routes/result');
+var successRouter = require('./routes/success');
 
 var app = express();
 
@@ -27,6 +28,7 @@ app.use('/users', usersRouter);
 app.use('/vote', voteRouter);
 app.use('/createCandidate', candidateRouter);
 app.use('/result', resultRouter);
+app.use('/success', successRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
